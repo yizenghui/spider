@@ -4,10 +4,119 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/xuebing1110/location"
+	"github.com/jinzhu/gorm"
+	"github.com/lunny/html2md"        // html 2 markdown
+	"github.com/xuebing1110/location" // location name 2 location code
 	"github.com/yizenghui/spider/code"
 	"github.com/yizenghui/spider/conf"
 )
+
+// Job 采集58职位数据结构
+type Job struct {
+	Title        string
+	Position     string
+	PositionName string
+	Category     string
+	CategoryName string
+	Location     string
+	Salery       string
+	PayType      string
+	Description  string
+	Number       string
+	Education    string
+	WorkYears    string
+	FromURL      string
+	Company      string
+	CompanyURL   string
+	Linkman      string
+	Telephone    string
+	Email        string
+	Address      string
+	Lng          string
+	Lat          string
+	Tags         []string
+}
+
+// JobData 本地保存数据结构
+type JobData struct {
+	gorm.Model
+	PublishAt    int `sql:"index" default:"0"`
+	Title        string
+	Position     string
+	Category     string
+	PositionName string
+	CategoryName string
+	Location     string
+	Salery       string
+	PayType      string
+	Description  string
+	Number       string
+	Education    string
+	WorkYears    string
+	FromURL      string `sql:"index"`
+	Company      string
+	CompanyURL   string
+	Linkman      string
+	Telephone    string
+	Email        string
+	Address      string
+	Lng          string
+	Lat          string
+	Welfare      string
+}
+
+// PubJob 提交转换的数据结构
+type PubJob struct {
+	Title       string // 职位标题
+	Position    string // 原职位分类
+	Company     string // 公司名
+	Category    int    // 分类
+	Area        int    // 地区
+	MinPay      int    // 最小月薪
+	MaxPay      int    // 最大月薪
+	Education   int    // 学历
+	Experience  int    // 工作经验
+	Welfare     []int  // 标签
+	Description string
+	SourceFrom  string // string默认长度为255, 使用这种tag重设。
+	CompanyURL  string // string默认长度为255, 使用这种tag重设。
+	Linkman     string
+	Telephone   string
+	Email       string
+	Address     string
+	Lng         float64
+	Lat         float64
+}
+
+// Transform 数据转换
+func Transform(job JobData) PubJob {
+	var pj PubJob
+	pj.Title = job.Title
+	pj.Position = job.Position
+	pj.Company = job.Company
+	pj.Category = TransformCategory(job.CategoryName + job.Category)
+	pj.Area = TransformArea(job.Location)
+	pj.MinPay, pj.MaxPay = TransformSalary(job.Salery)
+	pj.Education = TransformEducation(job.Education)
+	pj.Experience = TransformExperience(job.WorkYears)
+	pj.Welfare = TransformWelfare(job.Welfare)
+	pj.SourceFrom = job.FromURL
+	pj.CompanyURL = job.CompanyURL
+	pj.Linkman = job.Linkman
+	pj.Telephone = job.Telephone
+	pj.Email = job.Email
+	pj.Address = job.Address
+	lng, ex := strconv.ParseFloat(job.Lng, 64)
+	if ex == nil {
+		pj.Lng = lng
+	}
+	lat, ey := strconv.ParseFloat(job.Lat, 64)
+	if ey == nil {
+		pj.Lat = lat
+	}
+	pj.Description = html2md.Convert(job.Description)
+	return pj
+}
 
 // TransformArea 转化城市 使用了 github.com/xuebing1110/location 的 GetAdcode 满足目前需求
 func TransformArea(text string) int {

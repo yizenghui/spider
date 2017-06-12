@@ -10,32 +10,6 @@ import (
 	"github.com/yizenghui/spider/code"
 )
 
-// Job 采集58职位数据结构
-type Job struct {
-	Title        string
-	Position     string
-	PositionName string
-	Category     string
-	CategoryName string
-	Location     string
-	Salery       string
-	PayType      string
-	Description  string
-	Number       string
-	Education    string
-	WorkYears    string
-	FromURL      string
-	Company      string
-	CompanyURL   string
-	Linkman      string
-	Telephone    string
-	Email        string
-	Address      string
-	Lng          string
-	Lat          string
-	Tags         []string
-}
-
 // GetJobInfoData 获取职位详细数据
 func GetJobInfoData(mobileInfoURL string) (Job, error) {
 
