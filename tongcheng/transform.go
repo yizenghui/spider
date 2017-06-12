@@ -7,6 +7,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/lunny/html2md"        // html 2 markdown
 	"github.com/xuebing1110/location" // location name 2 location code
+	"github.com/yizenghui/gps"
 	"github.com/yizenghui/spider/code"
 	"github.com/yizenghui/spider/conf"
 )
@@ -107,13 +108,14 @@ func Transform(job JobData) PubJob {
 	pj.Email = job.Email
 	pj.Address = job.Address
 	lng, ex := strconv.ParseFloat(job.Lng, 64)
-	if ex == nil {
-		pj.Lng = lng
-	}
 	lat, ey := strconv.ParseFloat(job.Lat, 64)
-	if ey == nil {
-		pj.Lat = lat
+	if ey == nil && ex == nil && lng != 0 && lat != 0 {
+		// 百度转火星
+		latG1, lngG1 := gps.BD09ToGCJ02(lat, lng)
+		// 火星转国际
+		pj.Lat, pj.Lng = gps.GCJ02ToWGS84(latG1, lngG1)
 	}
+
 	pj.Description = html2md.Convert(job.Description)
 	return pj
 }
