@@ -89,8 +89,8 @@ type PubJob struct {
 	Lat         float64
 }
 
-// Transform 数据转换
-func Transform(job JobData) PubJob {
+// TransformJob 数据转换
+func TransformJob(job JobData) PubJob {
 	var pj PubJob
 	pj.Title = job.Title
 	pj.Position = job.Position

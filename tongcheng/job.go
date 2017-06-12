@@ -10,6 +10,19 @@ import (
 	"github.com/yizenghui/spider/code"
 )
 
+// JobRows 58PC职位列表记录集
+type JobRows []JobItem
+
+// JobItem 58PC职位列参数
+type JobItem struct {
+	Title      string
+	Company    string
+	CompanyURL string
+	Location   string
+	Date       string
+	InfoURL    string
+}
+
 // GetJobInfoData 获取职位详细数据
 func GetJobInfoData(mobileInfoURL string) (Job, error) {
 
@@ -63,12 +76,8 @@ func GetJobInfoData(mobileInfoURL string) (Job, error) {
 	var positionNameURL, _ = g.Find(".job_con ul li").Eq(0).Find(".attrValue").Find("a").Eq(0).Attr("href")
 
 	// fmt.Println(positionNameURL)
-	positionNameExp := myRegexp{regexp.MustCompile(`http://m.58.com/(?P<location>\w+)/(?P<category>\w+)/`)}
-
-	positionNameExpMap := positionNameExp.FindStringSubmatchMap(positionNameURL)
-
 	// 职位分类标识
-	job.PositionName, _ = positionNameExpMap["category"]
+	job.PositionName = code.FindString(`http://m.58.com/(?P<location>\w+)/(?P<category>\w+)/`, positionNameURL, "category")
 	/* 通过正则从链接地址中匹配出分类标识end */
 
 	// 分类
@@ -115,52 +124,31 @@ func GetJobInfoData(mobileInfoURL string) (Job, error) {
 	// 分类标识
 	job.CategoryName = categoryMap["category_name"]
 
-	// 工作经验经验不限
+	// 人数
+	job.Number = code.FindString(`{"I":"5353","V":"(?P<number>[^"]+)"}`, html, "number")
 
-	numberExp := myRegexp{regexp.MustCompile(`{"I":"5353","V":"(?P<number>[^"]+)"}`)}
+	//学历要求
+	job.Education = code.FindString(`,学历要求(?P<education>[^,]+),`, html, "education")
 
-	numberMap := numberExp.FindStringSubmatchMap(html)
-	job.Number = numberMap["number"]
+	//工作经验
+	job.WorkYears = code.FindString(`,工作经验(?P<workYears>[^,]+),`, html, "workYears")
 
-	//,学历要求学历不限,
-	educationExp := myRegexp{regexp.MustCompile(`,学历要求(?P<education>[^,]+),`)}
+	// 是否可接收应届生
+	freshGraduate := code.FindString(`,可接受(?P<freshGraduate>[^,]+),学历,`, html, "freshGraduate")
+	if freshGraduate == "" {
 
-	educationMap := educationExp.FindStringSubmatchMap(html)
-	job.Education = educationMap["education"]
+	}
 
-	//,工作经验1-2年,
+	job.Lat = code.FindString(`{"I":"6691","V":"(?P<lat>[^,]+)"},`, html, "lat")
 
-	workYearsExp := myRegexp{regexp.MustCompile(`,工作经验(?P<workYears>[^,]+),`)}
+	job.Lng = code.FindString(`{"I":"6692","V":"(?P<lng>[^,]+)"},`, html, "lng")
 
-	workYearsMap := workYearsExp.FindStringSubmatchMap(html)
-	job.WorkYears = workYearsMap["workYears"]
-
-	latExp := myRegexp{regexp.MustCompile(`{"I":"6691","V":"(?P<lat>[^,]+)"},`)}
-	latMap := latExp.FindStringSubmatchMap(html)
-	job.Lat = latMap["lat"]
-
-	lngExp := myRegexp{regexp.MustCompile(`{"I":"6692","V":"(?P<lng>[^,]+)"},`)}
-	lngMap := lngExp.FindStringSubmatchMap(html)
-	job.Lng = lngMap["lng"]
-
-	emailExp := myRegexp{regexp.MustCompile(`{"I":"5360","V":"(?P<email>[^"]+)"}`)}
-
-	mmap := emailExp.FindStringSubmatchMap(html)
-	email := mmap["email"]
-	// fmt.Println(mmap)
-	// fmt.Println(email)
-
+	email := code.FindString(`{"I":"5360","V":"(?P<email>[^"]+)"}`, html, "lng")
 	checkEmail, _ := regexp.MatchString(`(?P<first>\w+).58.com`, email)
-
 	// 不要58的邮箱
 	if !checkEmail {
 		job.Email = email
 	}
-
-	// fmt.Println(myExp.FindStringSubmatch(html))
-
-	//
-
 	// 福利标签
 	g.Find(".fulivalue").Find("span").Each(func(i int, content *goquery.Selection) {
 		text := content.Text()
@@ -171,10 +159,11 @@ func GetJobInfoData(mobileInfoURL string) (Job, error) {
 
 }
 
-func GetJobList(pc_list_url string) (Rows, error) {
-	var rows Rows
-	var item Item
-	g, e := goquery.NewDocument(pc_list_url)
+// GetJobList 获取职位列表
+func GetJobList(pcListURL string) (JobRows, error) {
+	var rows JobRows
+	var item JobItem
+	g, e := goquery.NewDocument(pcListURL)
 	if e != nil {
 		return rows, e
 	}
@@ -183,12 +172,12 @@ func GetJobList(pc_list_url string) (Rows, error) {
 	g.Find("#infolist dl").Each(func(i int, content *goquery.Selection) {
 
 		// 职位详细页链接地址
-		item.InfoUrl, _ = content.Find(".t").Attr("href")
+		item.InfoURL, _ = content.Find(".t").Attr("href")
 		// 验证URL是否我们需要的58PC job info url
-		checkLinkIsJobInfo, _ := regexp.MatchString(`http://(?P<site>\w+).58.com/(?P<cate>\w+)/(?P<id>\d+)x.shtml`, item.InfoUrl)
+		checkLinkIsJobInfo, _ := regexp.MatchString(`http://(?P<site>\w+).58.com/(?P<cate>\w+)/(?P<id>\d+)x.shtml`, item.InfoURL)
 		if checkLinkIsJobInfo {
 
-			item.InfoUrl = GetMobileJobInfoLink(item.InfoUrl)
+			item.InfoURL = GetMobileJobInfoLink(item.InfoURL)
 			// 标题
 			item.Title = strings.TrimSpace(content.Find(".t").Text())
 			// 地点
@@ -209,10 +198,9 @@ func GetJobList(pc_list_url string) (Rows, error) {
 	return rows, nil
 }
 
-// 通过pc详细页地址 获取手机端详细页地址
-func GetMobileJobInfoLink(pc_info_link string) string {
-	linkExp := myRegexp{regexp.MustCompile(`http://(?P<site>\w+).58.com/(?P<cate>\w+)/(?P<id>\d+)x.shtml`)}
-	linkMap := linkExp.FindStringSubmatchMap(pc_info_link)
+//GetMobileJobInfoLink 通过pc详细页地址 获取手机端详细页地址
+func GetMobileJobInfoLink(pcInfoLink string) string {
+	linkMap := code.SelectString(`http://(?P<site>\w+).58.com/(?P<cate>\w+)/(?P<id>\d+)x.shtml`, pcInfoLink)
 	var buffer bytes.Buffer
 	buffer.WriteString("http://m.58.com/")
 	buffer.WriteString(linkMap["site"])
@@ -222,38 +210,4 @@ func GetMobileJobInfoLink(pc_info_link string) string {
 	buffer.WriteString(linkMap["id"])
 	buffer.WriteString("x.shtml")
 	return buffer.String()
-}
-
-type Rows []Item
-
-type Item struct {
-	Title      string
-	Company    string
-	CompanyURL string
-	Location   string
-	Date       string
-	InfoUrl    string
-}
-
-type myRegexp struct {
-	*regexp.Regexp
-}
-
-func (r *myRegexp) FindStringSubmatchMap(s string) map[string]string {
-	captures := make(map[string]string)
-
-	match := r.FindStringSubmatch(s)
-	if match == nil {
-		return captures
-	}
-
-	for i, name := range r.SubexpNames() {
-		//
-		if i == 0 {
-			continue
-		}
-		captures[name] = match[i]
-
-	}
-	return captures
 }

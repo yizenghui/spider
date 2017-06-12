@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func Test_Transform(t *testing.T) {
+func Test_TransformJob(t *testing.T) {
 	var job JobData
 	job.Title = "服装设计"
 	job.Position = "服装设计师"
@@ -35,7 +35,7 @@ func Test_Transform(t *testing.T) {
 	job.Lat = "23.073643"
 	job.Welfare = "五险一金, 社会保险, 活动经费, 发展空间大"
 	// var pubJob PubJob
-	pubJob := Transform(job)
+	pubJob := TransformJob(job)
 	fmt.Println(pubJob)
 }
 
