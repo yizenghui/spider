@@ -11,7 +11,7 @@ import (
 )
 
 func Test_TransformJob(t *testing.T) {
-	var job JobData
+	var job Job
 	job.Title = "服装设计"
 	job.Position = "服装设计师"
 	job.Category = "服装/纺织/食品"
@@ -35,8 +35,8 @@ func Test_TransformJob(t *testing.T) {
 	job.Lat = "23.073643"
 	job.Welfare = "五险一金, 社会保险, 活动经费, 发展空间大"
 	// var pubJob PubJob
-	pubJob := TransformJob(job)
-	fmt.Println(pubJob)
+	postJob := TransformJob(job)
+	fmt.Println(postJob)
 }
 
 func Test_TransformArea(t *testing.T) {

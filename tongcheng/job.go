@@ -24,9 +24,9 @@ type JobItem struct {
 }
 
 // GetJobInfoData 获取职位详细数据
-func GetJobInfoData(mobileInfoURL string) (Job, error) {
+func GetJobInfoData(mobileInfoURL string) (SourceJob, error) {
 
-	var job Job
+	var job SourceJob
 
 	job.FromURL = mobileInfoURL
 

@@ -12,8 +12,8 @@ import (
 	"github.com/yizenghui/spider/conf"
 )
 
-// Job 采集58职位数据结构
-type Job struct {
+// SourceJob  采集58职位数据结构
+type SourceJob struct {
 	Title        string
 	Position     string
 	PositionName string
@@ -38,10 +38,10 @@ type Job struct {
 	Tags         []string
 }
 
-// JobData 本地保存数据结构
-type JobData struct {
+//Job  本地保存数据结构
+type Job struct {
 	gorm.Model
-	PublishAt    int `sql:"index" default:"0"`
+	PublishAt    int64 `sql:"index" default:"0"`
 	Title        string
 	Position     string
 	Category     string
@@ -66,32 +66,33 @@ type JobData struct {
 	Welfare      string
 }
 
-// PubJob 提交转换的数据结构
-type PubJob struct {
-	Title       string // 职位标题
-	Position    string // 原职位分类
-	Company     string // 公司名
-	Category    int    // 分类
-	Area        int    // 地区
-	MinPay      int    // 最小月薪
-	MaxPay      int    // 最大月薪
-	Education   int    // 学历
-	Experience  int    // 工作经验
-	Welfare     []int  // 标签
-	Description string
-	SourceFrom  string // string默认长度为255, 使用这种tag重设。
-	CompanyURL  string // string默认长度为255, 使用这种tag重设。
-	Linkman     string
-	Telephone   string
-	Email       string
-	Address     string
-	Lng         float64
-	Lat         float64
+// PostJob 提交转换的数据结构
+type PostJob struct {
+	Title      string   `json:"title" valid:"Required; MaxSize(12)"`     // 职位标题
+	Position   string   `json:"position" valid:"Required; MaxSize(12);"` // 原职位分类
+	Company    string   `json:"company"`                                 // 公司名
+	Category   int      `json:"category"  valid:"Range(101,129);"`       // 分类
+	Area       int      `json:"area"`                                    // 地区
+	MinPay     int      `json:"min_pay"`                                 // 最小月薪
+	MaxPay     int      `json:"max_pay"`                                 // 最大月薪
+	Education  int      `json:"education"`                               // 学历
+	Experience int      `json:"experience"`                              // 工作经验
+	Welfare    []int    `json:"welfare"`                                 //   valid:"Range(400,411);"  未清楚怎么使用子集验证
+	Tags       []string `json:"tags"`
+	Intro      string   `json:"intro"`
+	SourceFrom string   `json:"source_from"` // string默认长度为255, 使用这种tag重设。
+	CompanyURL string   `json:"company_url"` // string默认长度为255, 使用这种tag重设。
+	Linkman    string   `json:"linkman"`
+	Telephone  string   `json:"telephone"`
+	Email      string   `json:"email"`
+	Address    string   `json:"address"`
+	Lng        float64  `json:"lng"`
+	Lat        float64  `json:"lat"`
 }
 
 // TransformJob 数据转换
-func TransformJob(job JobData) PubJob {
-	var pj PubJob
+func TransformJob(job Job) PostJob {
+	var pj PostJob
 	pj.Title = job.Title
 	pj.Position = job.Position
 	pj.Company = job.Company
@@ -101,6 +102,7 @@ func TransformJob(job JobData) PubJob {
 	pj.Education = TransformEducation(job.Education)
 	pj.Experience = TransformExperience(job.WorkYears)
 	pj.Welfare = TransformWelfare(job.Welfare)
+	pj.Tags = strings.Split(job.Welfare, ",")
 	pj.SourceFrom = job.FromURL
 	pj.CompanyURL = job.CompanyURL
 	pj.Linkman = job.Linkman
@@ -116,7 +118,7 @@ func TransformJob(job JobData) PubJob {
 		pj.Lat, pj.Lng = gps.GCJ02ToWGS84(latG1, lngG1)
 	}
 
-	pj.Description = html2md.Convert(job.Description)
+	pj.Intro = html2md.Convert(job.Description)
 	return pj
 }
 
