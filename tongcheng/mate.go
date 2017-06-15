@@ -102,6 +102,7 @@ var CategoryMate = map[string]string{
 	"zhaopinzhuanyuan招聘专员/助理":   "行政/人力资源管理类",
 	"zhaopinzhuguan招聘经理/主管":     "行政/人力资源管理类",
 
+	"siji司机/交通服务":             "技工类",
 	"siji司机":                  "技工类",
 	"shangwujiaochesiji商务司机":  "技工类",
 	"changtukeyuansiji客运司机":   "技工类",
