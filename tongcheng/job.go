@@ -133,11 +133,23 @@ func GetJobInfoData(mobileInfoURL string) (SourceJob, error) {
 	//工作经验
 	job.WorkYears = code.FindString(`,工作经验(?P<workYears>[^,]+),`, html, "workYears")
 
-	// 是否可接收应届生
+	//TODO 是否可接收应届生
 	freshGraduate := code.FindString(`,可接受(?P<freshGraduate>[^,]+),学历,`, html, "freshGraduate")
 	if freshGraduate == "" {
 
 	}
+
+	//企业性质
+	job.CompanyType = code.FindString(`<li><span class="attrName">性质：</span><span class="attrValue">(?P<companyType>[^<]+)</span></li>`, html, "companyType")
+
+	// 公司规模
+	job.CompanySize = code.FindString(`,{"I":"5755","V":"(?P<companySize>[^"]+)"},{"I":"comp_id",`, html, "companySize")
+
+	// 公司所属行业
+	job.CompanyIndustry = strings.TrimSpace(code.FindString(`{"I":"camp_indus","V":"(?P<companyIndustry>[^"]+)"}`, html, "companyIndustry"))
+
+	// 公司详细描述
+	job.CompanyDescription = strings.TrimSpace(g.Find(".company_con ul p").Eq(0).Text())
 
 	job.Lat = code.FindString(`{"I":"6691","V":"(?P<lat>[^,]+)"},`, html, "lat")
 

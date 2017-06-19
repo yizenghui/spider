@@ -14,56 +14,64 @@ import (
 
 // SourceJob  采集58职位数据结构
 type SourceJob struct {
-	Title        string
-	Position     string
-	PositionName string
-	Category     string
-	CategoryName string
-	Location     string
-	Salery       string
-	PayType      string
-	Description  string
-	Number       string
-	Education    string
-	WorkYears    string
-	FromURL      string
-	Company      string
-	CompanyURL   string
-	Linkman      string
-	Telephone    string
-	Email        string
-	Address      string
-	Lng          string
-	Lat          string
-	Tags         []string
+	Title              string
+	Position           string
+	PositionName       string
+	Category           string
+	CategoryName       string
+	Location           string
+	Salery             string
+	PayType            string
+	Description        string
+	Number             string
+	Education          string
+	WorkYears          string
+	FromURL            string
+	Company            string
+	CompanyURL         string
+	Linkman            string
+	Telephone          string
+	Email              string
+	Address            string
+	Lng                string
+	Lat                string
+	Tags               []string
+	CompanySize        string
+	CompanyType        string
+	CompanyIndustry    string
+	CompanyDescription string
 }
 
 //Job  本地保存数据结构
 type Job struct {
 	gorm.Model
-	PublishAt    int64 `sql:"index" default:"0"`
-	Title        string
-	Position     string
-	Category     string
-	PositionName string
-	CategoryName string
-	Location     string
-	Salery       string
-	PayType      string
-	Description  string
-	Number       string
-	Education    string
-	WorkYears    string
-	FromURL      string `sql:"index"`
-	Company      string
-	CompanyURL   string
-	Linkman      string
-	Telephone    string
-	Email        string
-	Address      string
-	Lng          string
-	Lat          string
-	Welfare      string
+	PublishAt          int64 `sql:"index" default:"0"`
+	Title              string
+	Position           string
+	Category           string
+	PositionName       string
+	CategoryName       string
+	Location           string
+	Salery             string
+	PayType            string
+	Description        string
+	Number             string
+	Education          string
+	WorkYears          string
+	FromURL            string `sql:"index"`
+	Company            string
+	CompanyURL         string
+	Linkman            string
+	Telephone          string
+	Email              string
+	Address            string
+	Lng                string
+	Lat                string
+	Welfare            string
+	CompanySize        string
+	CompanyType        string
+	CompanyIndustry    string
+	CompanyDescription string
 }
 
 // PostJob 提交转换的数据结构
