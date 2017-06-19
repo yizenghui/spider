@@ -11,18 +11,23 @@ import (
 )
 
 func Test_GetJobInfo(t *testing.T) {
+	var infoURL string
 	//	que := yande.NewQuerier("", "1", "10")
 	// http://m.58.com/bj/yewu/8822526542722x.shtml
 	// http://m.58.com/gz/kefu/29097137457359x.shtml
-	job1, err := GetJobInfoData("http://m.58.com/gz/meirongjianshen/29506574767430x.shtml")
+	// http://m.58.com/gz/meirongjianshen/29506574767430x.shtml
+	// 代招职位测试
+	infoURL = "http://m.58.com/gz/zpshengchankaifa/30437721171913x.shtml"
+	// infoURL = "http://gz.58.com/zpshengchankaifa/30037188403141x.shtml"
+	job1, err := GetJobInfoData(infoURL)
 	if err != nil {
 		panic("spider job data error")
 
 	}
 	fmt.Println(job1)
 	fmt.Println(job1.Title)
-	fmt.Println(job1.Company)
-	fmt.Println(job1.CompanyURL)
+	// fmt.Println(job1.Company)
+	// fmt.Println(job1.CompanyURL)
 	// fmt.Println(job1.Tags)
 	// job2 := job.GetInfoData("http://m.58.com/gz/renli/27714016037839x.shtml")
 	// fmt.Println(job2.Title)
@@ -37,6 +42,6 @@ func Test_GetLisRows(t *testing.T) {
 	}
 	// fmt.Println(rows1)
 	for k, v := range rows1 {
-		fmt.Printf("%v -> %v\n", k, v.Title)
+		fmt.Printf("%v -> %v %v %v \n", k, v.Title, v.ISHR, v.InfoURL)
 	}
 }

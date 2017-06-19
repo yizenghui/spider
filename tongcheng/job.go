@@ -21,6 +21,7 @@ type JobItem struct {
 	Location   string
 	Date       string
 	InfoURL    string
+	ISHR       bool
 }
 
 // GetJobInfoData 获取职位详细数据
@@ -151,6 +152,23 @@ func GetJobInfoData(mobileInfoURL string) (SourceJob, error) {
 	// 公司详细描述
 	job.CompanyDescription = strings.TrimSpace(g.Find(".company_con ul p").Eq(0).Text())
 
+	// 代招信息
+	//代招企业名称
+	job.HRCompanyName = strings.TrimSpace(g.Find(".daizhao .d_tit").Eq(0).Text())
+
+	// 代招企业详细
+	job.HRCompanyDescription = strings.TrimSpace(g.Find(".daizhao p").Eq(0).Text())
+
+	// ,{"I":"5756","V":"19009066669"}  {"I":"5756","V":"
+	// 代招的职位信息才有这个参数
+	companyID := code.FindString(`{"I":"5756","V":"(?P<companyID>[^,]+)"},`, html, "companyID")
+	if companyID != "" {
+		HRCompanyID := code.FindString(`,'shopid':'(?P<HRCompanyID>[^,]+)',`, html, "HRCompanyID")
+		job.HRCompanyURL = "http://qy.m.58.com/m_detail/" + HRCompanyID + "/"
+	}
+
+	job.Lat = code.FindString(`{"I":"6691","V":"(?P<lat>[^,]+)"},`, html, "lat")
+
 	job.Lat = code.FindString(`{"I":"6691","V":"(?P<lat>[^,]+)"},`, html, "lat")
 
 	job.Lng = code.FindString(`{"I":"6692","V":"(?P<lng>[^,]+)"},`, html, "lng")
@@ -199,6 +217,14 @@ func GetJobList(pcListURL string) (JobRows, error) {
 			// 企业详细页链接地址
 			item.CompanyURL, _ = content.Find(".fl").Attr("href")
 
+			// 企业名
+			HRCompanyName, _ := content.Find(".rl").Find("a").Eq(0).Attr("class")
+
+			if HRCompanyName != "" {
+				item.ISHR = true
+			} else {
+				item.ISHR = false
+			}
 			// 职位更新时间
 			item.Date = strings.TrimSpace(content.Find(".w68").Text())
 
