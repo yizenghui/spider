@@ -221,10 +221,6 @@ func TransformSalaryContains(text string) (min, max int) {
 		return 0, 0
 	}
 
-	if b := strings.Contains(text, string("1000")); b == true {
-		return 0, 1000
-	}
-
 	if b := strings.Contains(text, string("1000-2000")); b == true {
 		return 1000, 2000
 	}
@@ -243,11 +239,16 @@ func TransformSalaryContains(text string) (min, max int) {
 	if b := strings.Contains(text, string("12000-20000")); b == true {
 		return 12000, 20000
 	}
+
 	if b := strings.Contains(text, string("20000-25000")); b == true {
 		return 20000, 25000
 	}
 	if b := strings.Contains(text, string("25000")); b == true {
 		return 25000, 0
+	}
+
+	if b := strings.Contains(text, string("1000")); b == true {
+		return 0, 1000
 	}
 
 	return 0, 0
